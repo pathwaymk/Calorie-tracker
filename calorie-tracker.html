@@ -10,6 +10,8 @@
   <!-- manifest removed for file:// usage to avoid CORS errors -->
   <meta name="theme-color" content="#22c55e" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <!-- Allow OneLogin sourcemap host for deployments that need it -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://s3.amazonaws.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
 </head>
 
 <body>
