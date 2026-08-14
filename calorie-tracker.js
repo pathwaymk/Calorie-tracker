@@ -174,13 +174,15 @@ function initialize() {
 }
 
 
-// Register service worker for PWA install (best-effort)
-if ('serviceWorker' in navigator) {
+// Register service worker for PWA install (best-effort, only on secure origins)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js')
+    navigator.serviceWorker.register('/service-worker.js')
       .then((reg) => console.log('Service worker registered.', reg))
       .catch((err) => console.warn('Service worker registration failed:', err));
   });
+} else {
+  console.log('Service worker not registered: not a secure origin or service workers unsupported.');
 }
 
 
