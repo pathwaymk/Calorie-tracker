@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Calorie Tracker</title>
+
+  <link rel="stylesheet" href="calorie-tracker.css" />
+  <!-- manifest removed for file:// usage to avoid CORS errors -->
+  <meta name="theme-color" content="#22c55e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div>
+        <h1>Calorie Tracker</h1>
+        <p>Track your food, workouts and daily calories</p>
+      </div>
+
+      <div class="date" id="todayDate"></div>
+    </header>
+
+
+    <!-- Daily Summary -->
+    <section class="card summary-card">
+
+      <div class="section-header">
+        <h2>Today's Calories</h2>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button
+            type="button"
+            class="goal-button"
+            id="goalButton"
+          >
+            Goal: 1,650 kcal
+          </button>
+        </div>
+      </div>
+
+
+      <div class="summary-content">
+
+        <!-- Progress Circle -->
+        <div
+          class="progress-circle"
+          id="progressCircle"
+        >
+          <div class="progress-inner">
+
+            <span
+              class="remaining-calories"
+              id="remainingCalories"
+            >
+              1,650
+            </span>
+
+            <span
+              class="remaining-label"
+              id="remainingLabel"
+            >
+              remaining
+            </span>
+
+          </div>
+        </div>
+
+
+        <!-- Statistics -->
+        <div class="stats">
+
+          <div class="stat">
+            <span class="stat-label">
+              Food
+            </span>
+
+            <strong
+              class="stat-value"
+              id="consumedCalories"
+            >
+              0 kcal
+            </strong>
+          </div>
+
+
+          <div class="stat workout-stat">
+            <span class="stat-label">
+              Workout
+            </span>
+
+            <strong
+              class="stat-value"
+              id="workoutCalories"
+            >
+              0 kcal
+            </strong>
+          </div>
+
+
+          <div class="stat">
+            <span class="stat-label">
+              Net Calories
+            </span>
+
+            <strong
+              class="stat-value"
+              id="netCalories"
+            >
+              0 kcal
+            </strong>
+          </div>
+
+
+          <div class="stat">
+            <span class="stat-label">
+              Daily Goal
+            </span>
+
+            <strong
+              class="stat-value"
+              id="dailyGoal"
+            >
+              1,650 kcal
+            </strong>
+          </div>
+
+
+          <div class="stat">
+            <span class="stat-label">Yesterday</span>
+            <strong class="stat-value" id="yesterdayCalories">0 kcal <span id="yesterdayTrend" class="trend"></span></strong>
+          </div>
+
+          <div class="stat">
+            <span class="stat-label">Avg (7d)</span>
+            <strong class="stat-value" id="weeklyAvg">0 kcal <span id="weeklyTrend" class="trend"></span></strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Add Food + Workout -->
+    <div class="form-page-nav">
+      <button type="button" class="page-tab active" data-target="foodPage" data-group="add">Add Food</button>
+      <button type="button" class="page-tab" data-target="workoutPage" data-group="add">Add Workout</button>
+    </div>
+
+    <div class="page-sections">
+      <!-- Add Food -->
+      <section id="foodPage" class="card page-section active" data-group="add">
+
+        <h2>Add Food</h2>
+
+        <form id="foodForm">
+
+          <div class="form-group">
+            <label for="foodDate">Date</label>
+            <input type="date" id="foodDate" name="foodDate" />
+          </div>
+
+          <div class="form-group">
+
+            <label for="foodName">
+              Food / Drink
+            </label>
+
+            <input
+              type="text"
+              id="foodName"
+              name="foodName"
+              placeholder="e.g. Chicken sandwich"
+              maxlength="80"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-row">
+
+            <div class="form-group">
+
+              <label for="calories">
+                Calories
+              </label>
+
+              <input
+                type="number"
+                id="calories"
+                name="calories"
+                placeholder="450"
+                min="0"
+                step="1"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="meal">
+                Meal
+              </label>
+
+              <select id="meal" name="meal">
+
+                <option value="Breakfast">
+                  Breakfast
+                </option>
+
+                <option value="Lunch">
+                  Lunch
+                </option>
+
+                <option value="Dinner">
+                  Dinner
+                </option>
+
+                <option value="Snack">
+                  Snack
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            + Add Food
+          </button>
+
+        </form>
+
+      </section>
+
+
+      <!-- Add Workout -->
+      <section id="workoutPage" class="card page-section" data-group="add">
+
+        <h2>Add Workout</h2>
+
+        <form id="workoutForm">
+
+          <div class="form-group">
+            <label for="workoutDate">Date</label>
+            <input type="date" id="workoutDate" name="workoutDate" />
+          </div>
+
+          <div class="form-group">
+
+            <label for="workoutName">
+              Workout
+            </label>
+
+            <input
+              type="text"
+              id="workoutName"
+              name="workoutName"
+              placeholder="e.g. Running"
+              maxlength="80"
+              required
+            />
+
+          </div>
+
+
+          <div class="form-row">
+
+            <div class="form-group">
+
+              <label for="workoutCalories">
+                Calories Burned
+              </label>
+
+              <input
+                type="number"
+                id="workoutCalories"
+                name="workoutCalories"
+                placeholder="300"
+                min="0"
+                step="1"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="workoutDuration">
+                Duration
+              </label>
+
+              <input
+                type="number"
+                id="workoutDuration"
+                name="workoutDuration"
+                placeholder="30"
+                min="0"
+                step="1"
+              />
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="primary-button workout-button"
+          >
+            + Add Workout
+          </button>
+
+        </form>
+
+      </section>
+    </div>
+
+    <div class="today-page-nav">
+      <button type="button" class="page-tab active" data-target="todayFoodPage" data-group="today">Today's Food</button>
+      <button type="button" class="page-tab" data-target="todayWorkoutPage" data-group="today">Today's Workouts</button>
+    </div>
+
+    <div class="today-page-sections">
+      <section id="todayFoodPage" class="card today-page-section active" data-group="today">
+        <div class="section-header">
+
+        <h2>Today's Food</h2>
+
+        <button
+          type="button"
+          class="danger-button"
+          id="clearTodayButton"
+        >
+          Clear
+        </button>
+
+      </div>
+
+
+      <div
+        class="food-list"
+        id="foodList"
+      ></div>
+
+    </section>
+
+      <section id="todayWorkoutPage" class="card today-page-section" data-group="today">
+
+        <div class="section-header">
+
+          <h2>Today's Workouts</h2>
+
+        </div>
+
+
+        <div
+          class="workout-list"
+          id="workoutList"
+        ></div>
+
+      </section>
+    </div>
+
+
+    <!-- History -->
+    <section class="card history-card">
+
+      <div class="section-header">
+
+        <h2>Recent History</h2>
+
+        <button
+          type="button"
+          class="danger-button"
+          id="clearHistoryButton"
+        >
+          Clear History
+        </button>
+
+      </div>
+
+
+      <div
+        class="history-list"
+        id="historyList"
+      ></div>
+
+    </section>
+
+
+    <!-- Daily Chart -->
+    <!-- Daily Chart -->
+    <section class="card chart-card">
+
+      <div class="section-header chart-header">
+
+        <div>
+          <h2>Daily Calorie Track</h2>
+
+          <p class="chart-description">
+            Compare your food intake, workouts and net calories.
+          </p>
+        </div>
+
+        <select
+          id="chartRange"
+          class="chart-range"
+          aria-label="Chart range"
+        >
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+        </select>
+
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="calorieChart" aria-label="Daily calorie chart"></canvas>
+      </div>
+
+      <div class="chart-legend">
+        <span><i class="legend-dot food-dot"></i>Food</span>
+        <span><i class="legend-dot workout-dot"></i>Workout</span>
+        <span><i class="legend-dot net-dot"></i>Net</span>
+        <span><i class="legend-line goal-line"></i>Goal</span>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- Toast -->
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <!-- Backup footer -->
+  <div class="backup-footer">
+    <div class="container">
+      <div style="display:flex;justify-content:flex-end;gap:10px;align-items:center;">
+        <button type="button" class="secondary-button" id="exportBackup">Export Backup</button>
+        <button type="button" class="secondary-button" id="importBackup">Restore Backup</button>
+        <input type="file" id="backupFileInput" accept=".json" style="display:none" />
+      </div>
+    </div>
+  </div>
+
+
+  <script src="calorie-tracker.js"></script>
+
+</body>
+</html>
