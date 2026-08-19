@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#22c55e" />
   <meta name="mobile-web-app-capable" content="yes" />
   <!-- Allow OneLogin sourcemap host for deployments that need it -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://s3.amazonaws.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://s3.amazonaws.com https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
 </head>
 
 <body>
@@ -28,7 +28,6 @@
 
       <div class="date" id="todayDate"></div>
     </header>
-
 
     <!-- Daily Summary -->
     <section class="card summary-card">
@@ -172,14 +171,14 @@
           <div class="form-group">
 
             <label for="foodName">
-              Food / Drink
+              Food / Drink details
             </label>
 
             <input
               type="text"
               id="foodName"
               name="foodName"
-              placeholder="e.g. Chicken sandwich"
+              placeholder="e.g. Chicken sandwich with mayo"
               maxlength="80"
               required
             />
@@ -188,25 +187,6 @@
 
 
           <div class="form-row">
-
-            <div class="form-group">
-
-              <label for="calories">
-                Calories
-              </label>
-
-              <input
-                type="number"
-                id="calories"
-                name="calories"
-                placeholder="450"
-                min="0"
-                step="1"
-                required
-              />
-
-            </div>
-
 
             <div class="form-group">
 
@@ -266,14 +246,14 @@
           <div class="form-group">
 
             <label for="workoutName">
-              Workout
+              Workout details
             </label>
 
             <input
               type="text"
               id="workoutName"
               name="workoutName"
-              placeholder="e.g. Running"
+              placeholder="e.g. Running for 30 minutes"
               maxlength="80"
               required
             />
@@ -282,25 +262,6 @@
 
 
           <div class="form-row">
-
-            <div class="form-group">
-
-              <label for="workoutCalories">
-                Calories Burned
-              </label>
-
-              <input
-                type="number"
-                id="workoutCalories"
-                name="workoutCalories"
-                placeholder="300"
-                min="0"
-                step="1"
-                required
-              />
-
-            </div>
-
 
             <div class="form-group">
 
@@ -459,6 +420,14 @@
   <!-- Backup footer -->
   <div class="backup-footer">
     <div class="container">
+      <section class="card ai-settings-card">
+        <label for="geminiApiKey">Gemini API key</label>
+        <div class="api-key-row">
+          <input type="password" id="geminiApiKey" autocomplete="off" placeholder="Paste your Gemini API key" />
+          <button type="button" class="secondary-button" id="saveApiKey">Save key</button>
+        </div>
+        <p class="form-help">The key is stored only in this browser and is used to estimate calories.</p>
+      </section>
       <div style="display:flex;justify-content:flex-end;gap:10px;align-items:center;">
         <button type="button" class="secondary-button" id="exportBackup">Export Backup</button>
         <button type="button" class="secondary-button" id="importBackup">Restore Backup</button>

@@ -4,6 +4,8 @@
 ======================================== */
 
 const STORAGE_KEY = "calorieTrackerData";
+const GEMINI_API_KEY_STORAGE_KEY = "calorieTrackerGeminiApiKey";
+const GEMINI_MODEL = "gemini-3.6-flash";
 
 let appData = loadData();
 
@@ -18,9 +20,6 @@ const foodForm =
 const foodNameInput =
   document.getElementById("foodName");
 
-const caloriesInput =
-  document.getElementById("calories");
-
 const mealInput =
   document.getElementById("meal");
 
@@ -30,11 +29,14 @@ const workoutForm =
 const workoutNameInput =
   document.getElementById("workoutName");
 
-const workoutCaloriesInput =
-  document.getElementById("workoutCalories");
-
 const workoutDurationInput =
   document.getElementById("workoutDuration");
+
+const geminiApiKeyInput =
+  document.getElementById("geminiApiKey");
+
+const saveApiKeyButton =
+  document.getElementById("saveApiKey");
 
 const foodList =
   document.getElementById("foodList");
@@ -160,6 +162,8 @@ function initialize() {
   if (exportBackupButton) exportBackupButton.addEventListener('click', exportBackup);
   if (importBackupButton) importBackupButton.addEventListener('click', () => backupFileInput && backupFileInput.click());
   if (backupFileInput) backupFileInput.addEventListener('change', handleBackupFile);
+  if (geminiApiKeyInput) geminiApiKeyInput.value = localStorage.getItem(GEMINI_API_KEY_STORAGE_KEY) || "";
+  if (saveApiKeyButton) saveApiKeyButton.addEventListener("click", saveGeminiApiKey);
 
   render();
 
@@ -416,6 +420,21 @@ function escapeHTML(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+let toastTimer;
+
+function showToast(message) {
+  if (!toast) {
+    return;
+  }
+
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 }
 
 
@@ -792,19 +811,13 @@ function renderSummary() {
 
 foodForm.addEventListener(
   "submit",
-  function(event) {
+  async function(event) {
 
     event.preventDefault();
 
 
     const name =
       foodNameInput.value.trim();
-
-
-    const calories =
-      Number(
-        caloriesInput.value
-      );
 
 
     const meal =
@@ -824,23 +837,18 @@ foodForm.addEventListener(
     }
 
 
-    if (
-      !Number.isFinite(calories) ||
-      calories < 0
-    ) {
-
-      showToast(
-        "Please enter valid calories"
-      );
-
-      caloriesInput.focus();
-
-      return;
-
-    }
-
-
     const dateKey = (foodDateInput && foodDateInput.value) ? foodDateInput.value : getTodayKey();
+
+    setSubmitBusy(foodForm, true);
+    let calories;
+    try {
+      calories = await estimateCalories(name, "food");
+    } catch (error) {
+      showToast(error.message);
+      setSubmitBusy(foodForm, false);
+      return;
+    }
+    setSubmitBusy(foodForm, false);
 
     if (!appData.days[dateKey]) {
       appData.days[dateKey] = { food: [], workouts: [] };
@@ -894,19 +902,13 @@ foodForm.addEventListener(
 
 workoutForm.addEventListener(
   "submit",
-  function(event) {
+  async function(event) {
 
     event.preventDefault();
 
 
     const name =
       workoutNameInput.value.trim();
-
-
-    const calories =
-      Number(
-        workoutCaloriesInput.value
-      );
 
 
     const duration =
@@ -928,23 +930,19 @@ workoutForm.addEventListener(
     }
 
 
-    if (
-      !Number.isFinite(calories) ||
-      calories < 0
-    ) {
-
-      showToast(
-        "Please enter valid workout calories"
-      );
-
-      workoutCaloriesInput.focus();
-
-      return;
-
-    }
-
-
     const dateKey = (workoutDateInput && workoutDateInput.value) ? workoutDateInput.value : getTodayKey();
+
+    setSubmitBusy(workoutForm, true);
+    let signedCalories;
+    try {
+      signedCalories = await estimateCalories(`${name}${duration ? ` for ${duration} minutes` : ""}`, "workout");
+    } catch (error) {
+      showToast(error.message);
+      setSubmitBusy(workoutForm, false);
+      return;
+    }
+    setSubmitBusy(workoutForm, false);
+    const calories = Math.abs(signedCalories);
 
     if (!appData.days[dateKey]) {
       appData.days[dateKey] = { food: [], workouts: [] };
@@ -2731,4 +2729,78 @@ function handleBackupFile(event) {
   reader.readAsText(file);
   // clear input so same file can be selected again
   event.target.value = '';
+}
+
+function saveGeminiApiKey() {
+  const apiKey = geminiApiKeyInput.value.trim();
+  if (apiKey) {
+    localStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, apiKey);
+    showToast("Gemini API key saved");
+  } else {
+    localStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY);
+    showToast("Gemini API key removed");
+  }
+}
+
+async function estimateCalories(details, entryType) {
+  const apiKey = geminiApiKeyInput.value.trim() || localStorage.getItem(GEMINI_API_KEY_STORAGE_KEY);
+  if (!apiKey) {
+    throw new Error("Add your Gemini API key before estimating calories");
+  }
+
+  const signInstruction = entryType === "workout"
+    ? "Return a negative integer because this is calories burned."
+    : "Return a positive integer because this is calories consumed.";
+
+  let response;
+  try {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Estimate the calories for this ${entryType}: ${details}. ${signInstruction} Return only the signed whole-number calorie value, with no words, punctuation, or formatting.`
+            }]
+          }],
+          generationConfig: { temperature: 0 }
+        })
+      }
+    );
+  } catch (error) {
+    throw new Error(`Could not connect to Gemini: ${error.message}`);
+  }
+
+  if (!response.ok) {
+    let reason = `HTTP ${response.status}`;
+    try {
+      const errorResult = await response.json();
+      reason = errorResult.error?.message || reason;
+    } catch (error) {
+      // Keep the HTTP status when the API does not return JSON.
+    }
+    throw new Error(`Gemini request failed: ${reason}`);
+  }
+
+  const result = await response.json();
+  const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  const match = text.match(/^[+-]?\d+(?:\.\d+)?$/);
+  const calories = match ? Math.round(Number(text)) : NaN;
+  const validSign = entryType === "workout" ? calories < 0 : calories > 0;
+
+  if (!Number.isFinite(calories) || !validSign || Math.abs(calories) > 100000) {
+    throw new Error("Gemini returned an invalid calorie value");
+  }
+
+  return calories;
+}
+
+function setSubmitBusy(form, busy) {
+  const button = form.querySelector("button[type=submit]");
+  if (button) {
+    button.disabled = busy;
+    button.textContent = busy ? "Estimating calories..." : (form === foodForm ? "+ Add Food" : "+ Add Workout");
+  }
 }

@@ -116,6 +116,38 @@ button {
   box-shadow: var(--shadow);
 }
 
+.ai-settings-card {
+  padding: 16px 18px;
+}
+
+.ai-settings-card label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.api-key-row {
+  display: flex;
+  gap: 10px;
+}
+
+.api-key-row input {
+  flex: 1;
+}
+
+.form-help {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 
 /* ========================================
    CARDS
